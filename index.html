@@ -348,15 +348,15 @@
                 <div class="stats">
                     <div class="stat">
                         <strong>影響力</strong><br>
-                        <span id="player1-influence">50</span>
+                        <span id="player1-influence">30</span>
                     </div>
                     <div class="stat">
                         <strong>資源</strong><br>
-                        <span id="player1-resources">30</span>
+                        <span id="player1-resources">20</span>
                     </div>
                     <div class="stat">
                         <strong>聲望</strong><br>
-                        <span id="player1-reputation">40</span>
+                        <span id="player1-reputation">25</span>
                     </div>
                 </div>
                 <div id="player1-achievements"></div>
@@ -367,15 +367,15 @@
                 <div class="stats">
                     <div class="stat">
                         <strong>影響力</strong><br>
-                        <span id="player2-influence">45</span>
+                        <span id="player2-influence">25</span>
                     </div>
                     <div class="stat">
                         <strong>資源</strong><br>
-                        <span id="player2-resources">40</span>
+                        <span id="player2-resources">25</span>
                     </div>
                     <div class="stat">
                         <strong>聲望</strong><br>
-                        <span id="player2-reputation">35</span>
+                        <span id="player2-reputation">20</span>
                     </div>
                 </div>
                 <div id="player2-achievements"></div>
@@ -426,9 +426,10 @@
                 <h3>🏆 獲勝條件</h3>
                 <p>首先達到以下任一條件的玩家獲勝：</p>
                 <ul>
-                    <li>影響力達到 100 點</li>
-                    <li>獲得 3 個成就徽章</li>
-                    <li>所有屬性總和達到 150 點</li>
+                    <li>影響力達到 120 點</li>
+                    <li>獲得 5 個成就徽章</li>
+                    <li>所有屬性總和達到 200 點，且每項屬性至少 50 點</li>
+                    <li>完成 3 輪完整棋盤旅程（96格）</li>
                 </ul>
                 
                 <h3>💡 人權主題</h3>
@@ -438,82 +439,103 @@
     </div>
 
     <script>
-        // 遊戲狀態
+        // 遊戲狀態 - 降低初始屬性
         let gameState = {
             currentPlayer: 1,
             players: {
-                1: { position: 0, influence: 50, resources: 30, reputation: 40, achievements: [] },
-                2: { position: 0, influence: 45, resources: 40, reputation: 35, achievements: [] }
+                1: { position: 0, influence: 30, resources: 20, reputation: 25, achievements: [], totalMoves: 0 },
+                2: { position: 0, influence: 25, resources: 25, reputation: 20, achievements: [], totalMoves: 0 }
             },
             gameStarted: false,
             currentScenario: null
         };
 
-        // 人權情境資料庫
+        // 人權情境資料庫 - 增加更具挑戰性的選擇
         const scenarios = [
             {
                 title: "言論自由挑戰",
                 description: "一位記者因報導政府貪腐被威脅，你會如何支持他？",
                 choices: [
-                    { text: "公開聲援", influence: 15, reputation: 10, resources: -5 },
-                    { text: "私下協助", influence: 8, reputation: 5, resources: -3 },
-                    { text: "保持沉默", influence: -5, reputation: -10, resources: 0 }
+                    { text: "公開聲援並組織抗議", influence: 20, reputation: 15, resources: -15 },
+                    { text: "私下協助並提供法律支援", influence: 12, reputation: 10, resources: -8 },
+                    { text: "保持沉默以保護自身安全", influence: -8, reputation: -15, resources: 0 }
                 ]
             },
             {
-                title: "教育平等",
-                description: "偏遠地區兒童面臨教育資源不足，你決定採取什麼行動？",
+                title: "教育平等危機",
+                description: "偏遠地區兒童面臨教育資源嚴重不足，政府預算遭到削減，你決定採取什麼行動？",
                 choices: [
-                    { text: "募集資金建學校", influence: 12, reputation: 8, resources: -10 },
-                    { text: "推動政策改革", influence: 10, reputation: 12, resources: -5 },
-                    { text: "組織志工教學", influence: 8, reputation: 6, resources: -3 }
+                    { text: "發起大規模募資建學校", influence: 18, reputation: 12, resources: -20 },
+                    { text: "遊說國會恢復教育預算", influence: 15, reputation: 20, resources: -12 },
+                    { text: "組織短期志工教學活動", influence: 8, reputation: 8, resources: -5 }
                 ]
             },
             {
-                title: "勞工權益",
-                description: "工廠員工面臨惡劣工作環境和低薪，你會如何幫助他們？",
+                title: "勞工權益衝突",
+                description: "跨國企業剝削當地勞工，工人罷工遭到暴力鎮壓，國際輿論關注，你會如何介入？",
                 choices: [
-                    { text: "組織工會抗議", influence: 15, reputation: 5, resources: -8 },
-                    { text: "尋求法律途徑", influence: 10, reputation: 15, resources: -5 },
-                    { text: "媒體曝光", influence: 12, reputation: 8, resources: -3 }
+                    { text: "組織國際聯合抵制行動", influence: 25, reputation: 10, resources: -18 },
+                    { text: "透過法律途徑提起國際訴訟", influence: 15, reputation: 25, resources: -15 },
+                    { text: "進行媒體曝光與人道救援", influence: 18, reputation: 15, resources: -10 }
                 ]
             },
             {
-                title: "環境正義",
-                description: "化工廠污染威脅社區健康，居民求助無門，你的選擇是？",
+                title: "環境正義危機",
+                description: "大型化工廠長期污染導致癌症村出現，政府與企業勾結掩蓋真相，你面臨生命威脅，如何行動？",
                 choices: [
-                    { text: "發起環保運動", influence: 18, reputation: 12, resources: -10 },
-                    { text: "提起公益訴訟", influence: 15, reputation: 18, resources: -8 },
-                    { text: "協助居民搬遷", influence: 5, reputation: 8, resources: -15 }
+                    { text: "冒險收集證據並國際曝光", influence: 30, reputation: 20, resources: -25 },
+                    { text: "尋求國際環保組織支援", influence: 20, reputation: 25, resources: -15 },
+                    { text: "先協助居民搬遷保護生命", influence: 8, reputation: 12, resources: -20 }
                 ]
             },
             {
-                title: "性別平等",
-                description: "女性員工遭受職場性騷擾，向你求助，你會如何處理？",
+                title: "性別平等挑戰",
+                description: "傳統社會中女性遭受系統性歧視，反對勢力強大，改革面臨重重阻礙，你的策略是？",
                 choices: [
-                    { text: "陪同報案", influence: 10, reputation: 15, resources: -5 },
-                    { text: "提供法律支援", influence: 12, reputation: 12, resources: -8 },
-                    { text: "組織支持團體", influence: 8, reputation: 10, resources: -3 }
+                    { text: "發起全國性婦女權利運動", influence: 22, reputation: 18, resources: -18 },
+                    { text: "推動立法保護並建立支援網絡", influence: 18, reputation: 22, resources: -12 },
+                    { text: "從教育著手逐步改變觀念", influence: 12, reputation: 15, resources: -8 }
                 ]
             },
             {
-                title: "難民危機",
-                description: "大批難民需要人道援助，但面臨政治阻力，你的行動是？",
+                title: "難民人道危機",
+                description: "戰爭導致大規模難民潮，政府拒絕接納，民眾恐懼排外，國際壓力巨大，你如何應對？",
                 choices: [
-                    { text: "直接提供援助", influence: 20, reputation: 15, resources: -15 },
-                    { text: "遊說政府政策", influence: 15, reputation: 20, resources: -10 },
-                    { text: "發起募款活動", influence: 12, reputation: 10, resources: -5 }
+                    { text: "直接違法提供庇護並承擔後果", influence: 25, reputation: 20, resources: -25 },
+                    { text: "組織大規模遊說改變政策", influence: 20, reputation: 25, resources: -20 },
+                    { text: "建立民間救援網絡", influence: 15, reputation: 15, resources: -15 }
+                ]
+            },
+            {
+                title: "數位隱私權爭議",
+                description: "政府推行大規模監控系統，以反恐為名侵犯公民隱私，科技巨頭配合政策，你如何捍衛隱私權？",
+                choices: [
+                    { text: "發起數位抵抗與網路行動主義", influence: 20, reputation: 12, resources: -15 },
+                    { text: "提起憲法訴訟挑戰監控法案", influence: 15, reputation: 20, resources: -18 },
+                    { text: "教育民眾保護個人數據", influence: 10, reputation: 15, resources: -8 }
+                ]
+            },
+            {
+                title: "原住民權利保護",
+                description: "開發商要在聖地開採礦物，原住民族抗議遭到忽視，傳統文化面臨滅絕危機，你會怎麼做？",
+                choices: [
+                    { text: "組織國際原住民權利聯盟", influence: 22, reputation: 18, resources: -20 },
+                    { text: "透過聯合國機制施壓", influence: 18, reputation: 22, resources: -15 },
+                    { text: "協助保存文化並記錄歷史", influence: 12, reputation: 12, resources: -10 }
                 ]
             }
         ];
 
-        // 成就系統
+        // 成就系統 - 更高難度要求
         const achievements = [
-            { name: "言論自由守護者", condition: (p) => p.influence >= 70, badge: "🎤" },
-            { name: "平等權利倡導者", condition: (p) => p.reputation >= 60, badge: "⚖️" },
-            { name: "資源整合專家", condition: (p) => p.resources >= 50, badge: "💰" },
-            { name: "社區領導者", condition: (p) => (p.influence + p.reputation) >= 100, badge: "👥" },
-            { name: "人權戰士", condition: (p) => (p.influence >= 80 && p.reputation >= 50), badge: "🛡️" }
+            { name: "言論自由守護者", condition: (p) => p.influence >= 85, badge: "🎤" },
+            { name: "平等權利倡導者", condition: (p) => p.reputation >= 80, badge: "⚖️" },
+            { name: "資源整合專家", condition: (p) => p.resources >= 70, badge: "💰" },
+            { name: "社區領導者", condition: (p) => (p.influence + p.reputation) >= 140, badge: "👥" },
+            { name: "人權戰士", condition: (p) => (p.influence >= 100 && p.reputation >= 70 && p.resources >= 60), badge: "🛡️" },
+            { name: "國際倡導者", condition: (p) => p.influence >= 90 && p.reputation >= 90, badge: "🌍" },
+            { name: "危機處理專家", condition: (p) => p.resources >= 80 && p.reputation >= 60, badge: "🚨" },
+            { name: "全能人權衛士", condition: (p) => p.influence >= 80 && p.reputation >= 80 && p.resources >= 80, badge: "👑" }
         ];
 
         // 頁面載入時初始化遊戲
@@ -607,9 +629,18 @@
             } else if (cellClasses.contains('goal')) {
                 setTimeout(() => showMilestone(), 500);
             } else {
-                // 普通格子，給予小量獎勵
-                player.resources += 2;
-                addToLog(`玩家${gameState.currentPlayer} 獲得 2 點資源`);
+                // 普通格子，獎勵減少並增加隨機事件
+                const randomEvent = Math.random();
+                if (randomEvent < 0.3) {
+                    // 30% 機率遇到小挫折
+                    const penalty = Math.floor(Math.random() * 3) + 1;
+                    player.resources = Math.max(0, player.resources - penalty);
+                    addToLog(`玩家${gameState.currentPlayer} 遇到小挫折，失去 ${penalty} 點資源`);
+                } else {
+                    // 70% 機率獲得小獎勵
+                    player.resources += 1;
+                    addToLog(`玩家${gameState.currentPlayer} 獲得 1 點資源`);
+                }
                 updatePlayerStats();
                 switchPlayer();
             }
@@ -645,13 +676,13 @@
             gameState.currentScenario = scenario;
         }
 
-        // 顯示里程碑
+        // 顯示里程碑 - 減少獎勵
         function showMilestone() {
             const player = gameState.players[gameState.currentPlayer];
             const bonus = {
-                influence: 10,
-                reputation: 8,
-                resources: 5
+                influence: 8,
+                reputation: 6,
+                resources: 4
             };
             
             player.influence += bonus.influence;
@@ -731,16 +762,19 @@
             });
         }
 
-        // 檢查獲勝條件
+        // 檢查獲勝條件 - 提高難度
         function checkWinCondition() {
             const player = gameState.players[gameState.currentPlayer];
             
-            if (player.influence >= 100) {
-                showWinModal(`玩家${gameState.currentPlayer} 憑藉卓越的影響力獲勝！`);
-            } else if (player.achievements.length >= 3) {
-                showWinModal(`玩家${gameState.currentPlayer} 憑藉眾多成就獲勝！`);
-            } else if ((player.influence + player.reputation + player.resources) >= 150) {
-                showWinModal(`玩家${gameState.currentPlayer} 憑藉全面發展獲勝！`);
+            if (player.influence >= 120) {
+                showWinModal(`玩家${gameState.currentPlayer} 憑藉卓越的影響力（120點）獲勝！成為真正的人權領袖！`);
+            } else if (player.achievements.length >= 5) {
+                showWinModal(`玩家${gameState.currentPlayer} 憑藉眾多成就（5個徽章）獲勝！你是全能的人權衛士！`);
+            } else if ((player.influence + player.reputation + player.resources) >= 200 && 
+                       player.influence >= 50 && player.reputation >= 50 && player.resources >= 50) {
+                showWinModal(`玩家${gameState.currentPlayer} 憑藉全面卓越發展獲勝！三項屬性均超過50且總和達200！`);
+            } else if (Math.floor(player.position / 32) >= 3) { // 完成3輪
+                showWinModal(`玩家${gameState.currentPlayer} 完成3輪人權守護長征獲勝！堅持不懈的精神令人敬佩！`);
             }
         }
 
@@ -789,13 +823,13 @@
             document.getElementById('rulesModal').style.display = 'none';
         }
 
-        // 重置遊戲
+        // 重置遊戲 - 更新初始值
         function resetGame() {
             gameState = {
                 currentPlayer: 1,
                 players: {
-                    1: { position: 0, influence: 50, resources: 30, reputation: 40, achievements: [] },
-                    2: { position: 0, influence: 45, resources: 40, reputation: 35, achievements: [] }
+                    1: { position: 0, influence: 30, resources: 20, reputation: 25, achievements: [], totalMoves: 0 },
+                    2: { position: 0, influence: 25, resources: 25, reputation: 20, achievements: [], totalMoves: 0 }
                 },
                 gameStarted: false,
                 currentScenario: null
